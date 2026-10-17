@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Overworld</title>
+<style>
+:root{--bg:#0b0b0c;--card:#161616;--ink:#f3ead2;--mute:#a39a82;--line:#2e2818;--accent:#d4af37;--accent2:#f2d675;--hdr:#000;--accent-ink:#1a1405;--warn:#e8a33d;--bad:#ff6b5e;
+--c-automatic:#6db3f2;--c-manual:#d4af37;--c-imported:#c3a1f0;--c-estimated:#e8a33d;--c-demo:#ff8a80;
+color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b0c;--card:#161616;--ink:#f3ead2;--mute:#a39a82;--line:#2e2818;--accent:#d4af37;--accent2:#f2d675;--hdr:#000;--accent-ink:#1a1405;--warn:#e8a33d;--bad:#ff6b5e;
+--c-automatic:#6db3f2;--c-manual:#6cc47a;--c-imported:#c3a1f0;--c-estimated:#f0b04a;--c-demo:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0b0c;--card:#161616;--ink:#f3ead2;--mute:#a39a82;--line:#2e2818;--accent:#d4af37;--accent2:#f2d675;--hdr:#000;--accent-ink:#1a1405;--warn:#e8a33d;--bad:#ff6b5e;--c-automatic:#6db3f2;--c-manual:#6cc47a;--c-imported:#c3a1f0;--c-estimated:#f0b04a;--c-demo:#ff8a80;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+header b{font-size:20px;letter-spacing:.3px}header small{color:var(--mute);display:block;font-size:12px}
+main{padding:14px 16px;max-width:640px;margin:0 auto}
+h2{font-size:18px;margin:18px 0 8px}h3{font-size:16px;margin:0 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid .card{margin:0}
+.stat{font-size:28px;font-weight:700;line-height:1}.mute{color:var(--mute);font-size:14px}
+.chip{display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;border:1px solid currentColor;border-radius:99px;padding:1px 8px;margin-left:4px;vertical-align:middle}
+.chip.automatic{color:var(--c-automatic)}.chip.manual{color:var(--c-manual)}.chip.imported{color:var(--c-imported)}.chip.estimated{color:var(--c-estimated)}.chip.demo{color:var(--c-demo)}
+button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;min-height:44px;cursor:pointer}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}button.dng{color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+input,textarea,select{font:inherit;width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);margin:4px 0 10px}
+textarea{min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+label{font-size:14px;font-weight:600}
+.banner{border:1px dashed var(--c-demo);color:var(--c-demo);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:14px}
+.msg{border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;background:var(--card);border:1px solid var(--accent)}.msg.err{border-color:var(--bad);color:var(--bad)}
+ul{padding-left:20px;margin:6px 0}li{margin:4px 0}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:6}
+nav button{flex:1;border:0;background:none;font-size:12px;padding:6px 2px;min-height:48px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:20px;line-height:1}nav button.on{color:var(--accent)}
+.tag{font-size:12px;color:var(--warn);font-weight:600}
+.cover{width:100%;height:170px;object-fit:cover;border-radius:10px;margin:0 0 8px;display:block}.ph{display:flex;gap:6px;overflow-x:auto;margin:0 0 8px}.ph img{height:80px;border-radius:8px;display:block}
+body{background:radial-gradient(900px 320px at 50% -80px,color-mix(in srgb,var(--accent) 16%,transparent),transparent),var(--bg)}
+body::before{background:var(--hdr)}
+header{background:var(--hdr);color:#fff;border-bottom:0;box-shadow:0 2px 14px rgba(0,0,0,.22)}
+header small,#storeflag{color:rgba(255,255,255,.78)}
+.card{border-radius:16px;box-shadow:0 1px 3px rgba(10,30,20,.08),0 8px 22px rgba(10,30,20,.07)}
+.stat{color:var(--accent);font-size:32px}
+h2{display:flex;align-items:center}h2::before{content:"";width:4px;height:16px;border-radius:2px;margin-right:8px;background:linear-gradient(var(--accent),var(--accent2))}
+button.pri{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;box-shadow:0 2px 8px rgba(15,157,138,.3)}
+nav{border-top:0;border-radius:20px 20px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.14)}
+nav button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);border-radius:14px;font-weight:700}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);border-color:transparent}
+header{border-bottom:1px solid var(--accent)}header b{color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
+button.pri{color:var(--accent-ink);box-shadow:0 2px 12px rgba(212,175,55,.35)}
+.card{border-color:var(--line)}nav{background:#0f0f0f;border-top:1px solid var(--line)}
+</style></head><body>
+<header><div><b>⛏ Overworld</b><small id="sub"></small></div><div id="storeflag" class="mute"></div></header>
+<main id="app"></main>
+<nav id="nav"></nav>
+<script>
+"use strict";
+const SRC=["automatic","manual","imported","estimated"],KEY="overworld:v1",SCHEMA=1;
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():"w-"+Date.now().toString(36)+Math.random().toString(36).slice(2,12));
+const now=()=>new Date().toISOString();
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=i=>{try{return new Date(i).toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"})}catch(e){return i}};
+const chip=s=>`<span class="chip ${esc(s)}">${esc(s)}</span>`;
+
+/* Data layer: adapters share one interface so a CloudAdapter can replace LocalAdapter later.
+   Every world carries id, rev and updatedAt for future sync/conflict handling. */
+const LocalAdapter={name:"localStorage",
+ async load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}},
+ async save(s){try{localStorage.setItem(KEY,JSON.stringify(s));return true}catch(e){return false}}};
+const Adapter=LocalAdapter;
+
+let form=null;
+const noW=()=>`<div class="card"><h3>No active world</h3><p class="mute">Create or select a world first.</p><button class="pri" data-act="go" data-v="worlds">Open Worlds</button></div>`;
+const back=t=>`<div class="row" style="margin:0 0 10px"><button data-act="go" data-v="modules">← Modules</button></div><h2 style="margin-top:0">${t}</h2>`;
+const dbn=w=>w.demo?`<div class="banner"><b>Demo world.</b> Sample data, not real.</div>`:"";
+const srcSel=(id,cur)=>{const o=["manual","estimated"];if(cur&&!o.includes(cur))o.push(cur);return`<select id="${id}">${o.map(s=>`<option ${s===cur?"selected":""}>${s}</option>`).join("")}</select>`};
+const dimSel=(id,cur)=>`<select id="${id}">${["Overworld","Nether","The End"].map(s=>`<option ${s===cur?"selected":""}>${s}</option>`).join("")}</select>`;
+const num=id=>{const v=parseFloat(val(id));return Number.isFinite(v)?v:null};
+const fc=r=>r.x==null?"no coordinates":`${r.x}, ${r.y==null?"?":r.y}, ${r.z}`;
+const xyz=(p,o)=>`<label>Coordinates (X, Y, Z)</label><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><input id="${p}X" type="number" placeholder="X" value="${esc(o.x)}"><input id="${p}Y" type="number" placeholder="Y" value="${esc(o.y)}"><input id="${p}Z" type="number" placeholder="Z" value="${esc(o.z)}"></div>`;
+const delBtn=(k,id)=>confirmDel===k+":"+id?`<button class="dng" data-act="delRec" data-k="${k}" data-id="${id}">Confirm delete</button><button data-act="delNo">Keep</button>`:`<button class="dng" data-act="delAsk" data-id="${k}:${id}">Delete</button>`;
+const ferrBox=`<div id="ferr" class="msg err" hidden></div>`;
+const addBtn=(k,t)=>`<div class="row" style="margin:0 0 10px"><button class="pri" data-act="formOn" data-k="${k}">${t}</button></div>`;
+function ferr(t){const e=document.getElementById("ferr");if(e){e.textContent=t;e.hidden=false}}
+function upsert(key,fields,what,extra){const w=active(),edit=form&&form.id;let r=edit?w[key].find(x=>x.id===form.id):null;if(r)Object.assign(r,fields);else{r={id:uid(),...extra,...fields};w[key].push(r)}touch(w);log(w,(edit?"Edited ":"Added ")+what+": "+(fields.item||fields.name));form=null;msg={html:"Saved."};commit()}
+const phot=r=>{const ps=(r.photos||[]).map((p,i)=>({p,i})).filter(x=>x.p&&typeof x.p.data==='string'&&x.p.data.startsWith('data:image/'));return ps.length?`<img class='cover' alt='${esc(r.name)}' src='${ps[0].p.data}'><div class='ph'>${ps.map(x=>`<span style='position:relative;flex:none'><img alt='' src='${x.p.data}'><button data-act='delPhoto' data-id='${r.id}' data-i='${x.i}' style='position:absolute;top:2px;right:2px;min-height:28px;padding:0 8px'>✕</button></span>`).join('')}</div>`:''};
+const photoBtn=r=>`<label class='btn'>+ Photo<input type='file' accept='image/*' data-photo='${r.id}' hidden></label>`;
+function addPhoto(id,file){const w=active(),f=w&&w.farms.find(x=>x.id===id);if(!f||!file)return;
+ if((f.photos||[]).length>=4){msg={err:1,html:'Up to 4 photos per farm.'};render();return}
+ const fr=new FileReader();fr.onerror=()=>{msg={err:1,html:'Could not read that file.'};render()};
+ fr.onload=()=>{const img=new Image();img.onerror=()=>{msg={err:1,html:'That file is not a readable image.'};render()};
+  img.onload=()=>{const s=Math.min(1,800/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+   (f.photos=f.photos||[]).push({id:uid(),at:now(),data:c.toDataURL('image/jpeg',0.7)});touch(w);log(w,'Added a photo to '+f.name);msg={html:'Photo added.'};commit()};
+  img.src=fr.result};
+ fr.readAsDataURL(file)}
+const yv=id=>num(id)==null?null:Math.round(num(id));
+const inv=w=>{const t={};w.inventory.forEach(r=>{const k=String(r.item).toLowerCase();t[k]=(t[k]||0)+(+r.qty||0)});return t};
+const pdone=p=>(p.checklist||[]).length>0&&p.checklist.every(c=>c.done);
+const blockedBy=(w,p)=>(p.deps||[]).map(id=>w.projects.find(x=>x.id===id)).filter(d=>d&&!pdone(d));
+const short=(w,p)=>{const t=inv(w);return (p.needs||[]).map(n=>{const h=t[String(n.item).toLowerCase()]||0;return{...n,have:Math.min(h,n.qty),miss:Math.max(0,n.qty-h)}})};
+function advise(w){const out=[];
+ w.projects.filter(p=>!pdone(p)).forEach(p=>{const bl=blockedBy(w,p),sh=short(w,p),miss=sh.filter(n=>n.miss>0),tot=sh.reduce((a,n)=>a+n.qty,0),have=sh.reduce((a,n)=>a+n.have,0),ready=tot?have/tot:1,pr={high:3,medium:2,low:1}[p.priority]||2,why=[];
+  if(bl.length)why.push('Blocked until done: '+bl.map(d=>d.name).join(', '));
+  why.push(tot?Math.round(ready*100)+'% of materials already in inventory':'No requirements listed');
+  miss.forEach(n=>{const fm=w.farms.flatMap(f=>(f.output||[]).filter(o=>String(o.item).toLowerCase()===String(n.item).toLowerCase()&&o.perHour>0).map(o=>({f,o}))).sort((a,b)=>b.o.perHour-a.o.perHour)[0];
+   why.push('Missing '+n.miss+' '+n.item+(fm?' · '+fm.f.name+' measured at '+fm.o.perHour+'/h, roughly '+(Math.round(n.miss/fm.o.perHour*10)/10)+' h to cover (estimate)':' · no measured farm produces it'))});
+  out.push({p,blocked:bl.length>0,score:pr*10+ready*10-(bl.length?100:0),why})});
+ return out.sort((a,b)=>b.score-a.score)}
+const LISTS=["inventory","farms","places","projects","activity"];
+function validateWorld(w,i,errs){
+ const p="World "+(i+1)+": ";
+ if(!w||typeof w!=="object"||Array.isArray(w)){errs.push(p+"not an object");return null}
+ if(typeof w.id!=="string"||!w.id||w.id.length>100)errs.push(p+"missing or invalid id");
+ if(typeof w.name!=="string"||!w.name.trim()||w.name.length>60)errs.push(p+"name must be 1–60 characters");
+ for(const k of LISTS){
+  if(w[k]===undefined)continue;
+  if(!Array.isArray(w[k])){errs.push(p+k+" must be a list");continue}
+  w[k].forEach((r,j)=>{
+   if(!r||typeof r!=="object"||Array.isArray(r))errs.push(p+k+"["+j+"] is not an object");
+   else if(r.source!==undefined&&!SRC.includes(r.source))errs.push(p+k+"["+j+"] has unknown source label “"+String(r.source).slice(0,20)+"”");
+  });
+ }
+ if(errs.length)return null;
+ const o={id:w.id,name:w.name.trim(),seed:String(w.seed??""),notes:String(w.notes??""),demo:w.demo===true,
+  source:SRC.includes(w.source)?w.source:"manual",createdAt:w.createdAt||now(),updatedAt:w.updatedAt||now(),rev:Number.isInteger(w.rev)?w.rev:1};
+ for(const k of LISTS)o[k]=(w[k]||[]).map(r=>({...r,id:r.id||uid(),source:r.source||"manual"}));
+ return o;
+}
+function validateBundle(text){
+ const errs=[];let d;
+ try{d=JSON.parse(text)}catch(e){return{errs:["Not valid JSON: "+e.message],worlds:[]}}
+ if(!d||typeof d!=="object"||d.app!=="overworld")return{errs:["This is not an Overworld export (missing app: \"overworld\")."],worlds:[]};
+ if(!Number.isInteger(d.schemaVersion))return{errs:["Missing schemaVersion."],worlds:[]};
+ if(d.schemaVersion>SCHEMA)return{errs:["Export is from a newer schema (v"+d.schemaVersion+"); this app reads v"+SCHEMA+"."],worlds:[]};
+ if(!Array.isArray(d.worlds)||!d.worlds.length)return{errs:["worlds must be a non-empty list."],worlds:[]};
+ const ws=d.worlds.map((w,i)=>validateWorld(w,i,errs));
+ const ids=d.worlds.map(w=>w&&w.id);
+ if(new Set(ids).size!==ids.length)errs.push("Duplicate world ids inside the file.");
+ return{errs:errs.slice(0,20),worlds:errs.length?[]:ws};
+}
+
+let S={schemaVersion:SCHEMA,activeWorldId:null,worlds:[]},storageOk=true,route="home",editing=null,confirmDel=null,msg=null,importPreview=null,exportScope="active";
+const active=()=>S.worlds.find(w=>w.id===S.activeWorldId)||null;
+const touch=w=>{w.updatedAt=now();w.rev++};
+const log=(w,t)=>{w.activity.unshift({id:uid(),at:now(),text:t,source:"manual"});w.activity=w.activity.slice(0,50)};
+async function commit(){storageOk=await Adapter.save(S);render()}
+
+function newWorld(name,seed,notes){
+ const t=now();return{id:uid(),name,seed,notes,demo:false,source:"manual",createdAt:t,updatedAt:t,rev:1,inventory:[],farms:[],places:[],projects:[],activity:[]};
+}
+function demoWorld(){
+ const w=newWorld("Demo World (sample data)","","Sample data for trying the app. None of it is from a real Minecraft world.");
+ w.demo=true;w.source="estimated";
+ const r=o=>({id:uid(),source:"estimated",...o});
+ w.inventory=[r({item:"Iron Ingot",qty:128,location:"Demo storage room"}),r({item:"Wheat",qty:340,location:"Demo barn chest"}),r({item:"Diamond",qty:9,location:"Demo vault"})];
+ w.farms=[r({name:"Demo Wheat Farm",dim:"Overworld",x:120,y:64,z:-45,output:[{item:"Wheat",perHour:600,source:"estimated"}]}),r({name:"Demo Iron Farm",dim:"Overworld",x:-80,y:40,z:200,output:[]})];
+ w.places=[r({name:"Demo Spawn",dim:"Overworld",x:0,y:64,z:0,type:"spawn"}),r({name:"Demo Nether Hub",dim:"Nether",x:15,y:70,z:-6,type:"hub"})];
+ w.projects=[r({name:"Demo: Expand storage room",priority:"medium",needs:[{item:"Chest",qty:12}],checklist:[{t:"Gather planks",done:true},{t:"Craft chests",done:false}]})];
+ log(w,"Demo world created with sample data");return w;
+}
+
+/* Basic recommendations: plain rules over saved data, no AI API, nothing invented. */
+function tasks(w){
+ const t=[];
+ if(!w.places.length)t.push("Record your spawn point and base coordinates in the atlas.");
+ if(!w.farms.length)t.push("Add the farms you already run, with coordinates.");
+ else if(w.farms.some(f=>!(f.output&&f.output.length)))t.push("Measure output for farms that have no production figures yet.");
+ if(!w.inventory.length)t.push("Log what is in your main storage so shortages show up.");
+ if(!w.projects.length)t.push("Plan a first project with its resource list.");
+ else{const open=w.projects.filter(p=>(p.checklist||[]).some(c=>!c.done));if(open.length)t.push("Finish open checklist items on: "+open.map(p=>p.name).join(", ")+".")}
+ const ad=advise(w).find(x=>!x.blocked);if(ad)t.unshift('Suggested next project: '+ad.p.name+' (see Advisor).');t.push('Export a JSON backup from the Data tab.');
+ return t;
+}
+
+const NAV=[["home","⌂","Home"],["worlds","🌍","Worlds"],["modules","▦","Modules"],["data","⇅","Data"],["status","◉","Status"]];
+const view={
+home(){
+ const w=active();
+ if(!w)return`<div class="card"><h3>No world yet</h3><p class="mute">Create a world to start tracking. Nothing is pre-filled for you.</p><div class="row"><button class="pri" data-act="go" data-v="worlds">Create a world</button><button data-act="addDemo">Load demo world</button></div></div>`;
+ const withOut=w.farms.filter(f=>f.output&&f.output.length);
+ return`${w.demo?`<div class="banner"><b>Demo world.</b> Everything here is sample data, not real Minecraft data.</div>`:""}
+ <div class="card"><div class="mute">Active world</div><h3>${esc(w.name)} ${w.demo?chip("demo"):chip(w.source)}</h3>
+ <div class="mute">Bedrock · Survival · created ${fmt(w.createdAt)}</div>${w.notes?`<p>${esc(w.notes)}</p>`:""}</div>
+ <div class="grid"><div class="card"><div class="stat">${w.farms.length}</div><div class="mute">Farms</div></div>
+ <div class="card"><div class="stat">${w.inventory.length}</div><div class="mute">Inventory entries</div></div>
+ <div class="card"><div class="stat">${w.places.length}</div><div class="mute">Atlas places</div></div>
+ <div class="card"><div class="stat">${w.projects.length}</div><div class="mute">Projects</div></div></div>
+ <h2>Farm statistics</h2>
+ <div class="card">${withOut.length?withOut.map(f=>`<div><b>${esc(f.name)}</b> ${chip(f.source)}<ul>${f.output.map(o=>`<li>${esc(o.item)}: ${esc(o.perHour)}/hour ${chip(o.source||f.source)}</li>`).join("")}</ul></div>`).join(""):`<span class="mute">No production measurements recorded${w.farms.length?"":" and no farms added"} yet.</span>`}</div>
+ <h2>Recommended tasks</h2>
+ <div class="card"><ul>${tasks(w).map(x=>`<li>${esc(x)}</li>`).join("")}</ul><div class="mute">Rule-based suggestions from your saved data. Project editors arrive with the planner.</div></div>
+ <h2>Recent activity</h2>
+ <div class="card">${w.activity.length?`<ul>${w.activity.slice(0,5).map(a=>`<li>${esc(a.text)} <span class="mute">· ${fmt(a.at)}</span></li>`).join("")}</ul>`:`<span class="mute">Nothing yet.</span>`}</div>`;
+},
+worlds(){
+ const e=editing&&S.worlds.find(w=>w.id===editing);
+ const hasDemo=S.worlds.some(w=>w.demo);
+ return`<div class="card"><h3>${e?"Edit world":"Create a world"}</h3>
+ <label for="wn">Name</label><input id="wn" maxlength="60" placeholder="My survival world" value="${esc(e?e.name:"")}">
+ <label for="ws">Seed (optional)</label><input id="ws" placeholder="Leave blank if unknown" value="${esc(e?e.seed:"")}">
+ <label for="wt">Notes (optional)</label><textarea id="wt" style="min-height:70px;font-family:inherit;font-size:16px">${esc(e?e.notes:"")}</textarea>
+ <div class="row"><button class="pri" data-act="saveWorld">${e?"Save changes":"Create world"}</button>${e?`<button data-act="cancelEdit">Cancel</button>`:""}</div></div>
+ <h2>Your worlds (${S.worlds.length})</h2>
+ ${S.worlds.map(w=>`<div class="card"><h3>${esc(w.name)} ${w.demo?chip("demo"):chip(w.source)} ${w.id===S.activeWorldId?`<span class="chip manual">active</span>`:""}</h3>
+ <div class="mute">Created ${fmt(w.createdAt)} · rev ${w.rev}</div><div class="mono mute">id ${esc(w.id)}</div>
+ <div class="row">${w.id!==S.activeWorldId?`<button class="pri" data-act="activate" data-id="${esc(w.id)}">Set active</button>`:""}
+ <button data-act="edit" data-id="${esc(w.id)}">Edit</button>
+ ${confirmDel===w.id?`<button class="dng" data-act="delYes" data-id="${esc(w.id)}">Confirm delete</button><button data-act="delNo">Keep</button>`:`<button class="dng" data-act="delAsk" data-id="${esc(w.id)}">Delete</button>`}</div></div>`).join("")||`<div class="card mute">No worlds yet.</div>`}
+ ${hasDemo?"":`<div class="card"><h3>Try the demo</h3><p class="mute">Adds a clearly labeled world filled with sample data. Delete it any time.</p><button data-act="addDemo">Add demo world</button></div>`}`;
+},
+inventory(){const w=active();if(!w)return noW();
+ const e=form&&form.k==="inventory"?(w.inventory.find(r=>r.id===form.id)||{}):null;
+ const tot={};w.inventory.forEach(r=>{tot[r.item]=(tot[r.item]||0)+(+r.qty||0)});
+ return back("Inventory")+dbn(w)+(e?`<div class="card"><h3>${e.id?"Edit entry":"Add entry"}</h3>${ferrBox}
+ <label for="iN">Item</label><input id="iN" maxlength="60" placeholder="Iron Ingot" value="${esc(e.item)}">
+ <label for="iQ">Quantity</label><input id="iQ" type="number" min="0" inputmode="numeric" value="${esc(e.qty)}">
+ <label for="iL">Storage location</label><input id="iL" maxlength="80" placeholder="Main base, chest wall A" value="${esc(e.location)}">
+ <label for="iS">Label</label>${srcSel("iS",e.source)}
+ <div class="row"><button class="pri" data-act="saveInv">Save</button><button data-act="formOff">Cancel</button></div></div>`:addBtn("inventory","+ Add entry"))
+ +(w.inventory.length?`<div class="card"><h3>Totals by item</h3><ul>${Object.keys(tot).sort().map(k=>`<li>${esc(k)}: <b>${tot[k]}</b></li>`).join("")}</ul><div class="mute">Totals combine entries of every label.</div></div>`:"")
+ +w.inventory.map(r=>`<div class="card"><h3>${esc(r.item)} × ${esc(r.qty)} ${chip(r.source)}</h3><div class="mute">${esc(r.location||"location not set")}</div><div class="row"><button data-act="formOn" data-k="inventory" data-id="${r.id}">Edit</button>${delBtn("inventory",r.id)}</div></div>`).join("")
+ +(w.inventory.length||e?"":`<div class="card mute">No inventory recorded yet.</div>`)},
+farms(){const w=active();if(!w)return noW();
+ const f=form&&form.k==="farms"?(w.farms.find(r=>r.id===form.id)||{}):null;
+ const m=form&&form.k==="meas"?w.farms.find(r=>r.id===form.id):null;
+ return back("Farms")+dbn(w)+(f?`<div class="card"><h3>${f.id?"Edit farm":"Add farm"}</h3>${ferrBox}
+ <label for="fN">Name</label><input id="fN" maxlength="60" placeholder="Iron farm" value="${esc(f.name)}">
+ <label for="fT">Type (optional)</label><input id="fT" maxlength="40" placeholder="Wheat, iron, mob…" value="${esc(f.type)}">
+ <label for="fD">Dimension</label>${dimSel("fD",f.dim)}
+ ${xyz("f",f)}
+ <label for="fS" style="display:block;margin-top:10px">Label</label>${srcSel("fS",f.source)}
+ <div class="row"><button class="pri" data-act="saveFarm">Save</button><button data-act="formOff">Cancel</button></div></div>`
+ :m?`<div class="card"><h3>Log output: ${esc(m.name)}</h3>${ferrBox}
+ <label for="mI">Item produced</label><input id="mI" maxlength="60" placeholder="Iron Ingot">
+ <label for="mC">Items collected</label><input id="mC" type="number" min="0" inputmode="numeric">
+ <label for="mM">Over how many minutes?</label><input id="mM" type="number" min="1" inputmode="decimal">
+ <label for="mS">Label</label>${srcSel("mS","manual")}
+ <div class="mute" style="margin-bottom:10px">Rate per hour is calculated from these two numbers.</div>
+ <div class="row"><button class="pri" data-act="saveMeas">Save measurement</button><button data-act="formOff">Cancel</button></div></div>`:addBtn("farms","+ Add farm"))
+ +w.farms.map(r=>`<div class="card"><h3>${esc(r.name)} ${chip(r.source)}</h3>${phot(r)}<div class="mute">${esc(r.type||"")}${r.type?" · ":""}${esc(r.dim)} · <span class="mono">${fc(r)}</span></div>
+ ${(r.output||[]).length?`<ul>${r.output.map(o=>`<li>${esc(o.item)}: ${esc(o.perHour)}/hour ${chip(o.source||r.source)}</li>`).join("")}</ul>`:`<div class="mute">No output measured yet.</div>`}
+ ${(r.history||[]).length?`<details><summary class="mute">History (${r.history.length})</summary><ul>${r.history.slice(0,10).map(h=>`<li>${fmt(h.at)}: ${esc(h.count)} ${esc(h.item)} in ${esc(h.minutes)} min = ${esc(h.perHour)}/h ${chip(h.source)}</li>`).join("")}</ul></details>`:""}
+ <div class="row">${photoBtn(r)}<button data-act="formOn" data-k="meas" data-id="${r.id}">Log output</button><button data-act="formOn" data-k="farms" data-id="${r.id}">Edit</button>${delBtn("farms",r.id)}</div></div>`).join("")
+ +(w.farms.length||f||m?"":`<div class="card mute">No farms yet.</div>`)},
+atlas(){const w=active();if(!w)return noW();
+ const p=form&&form.k==="places"?(w.places.find(r=>r.id===form.id)||{}):null;
+ const T=["Base","Spawn","Portal","Village","Structure","Biome landmark","Other"];
+ const TT=p&&p.type&&!T.includes(p.type)?[...T,p.type]:T;
+ const by={};w.places.forEach(r=>{const d=r.dim||"Overworld";(by[d]=by[d]||[]).push(r)});
+ const conv=r=>typeof r.x!=="number"||typeof r.z!=="number"?"":r.dim==="Overworld"?`<div class="mute">Nether equivalent ≈ ${Math.floor(r.x/8)}, ${Math.floor(r.z/8)} ${chip("estimated")}</div>`:r.dim==="Nether"?`<div class="mute">Overworld equivalent ≈ ${r.x*8}, ${r.z*8} ${chip("estimated")}</div>`:"";
+ return back("Atlas")+dbn(w)+(p?`<div class="card"><h3>${p.id?"Edit place":"Add place"}</h3>${ferrBox}
+ <label for="pN">Name</label><input id="pN" maxlength="60" placeholder="Main base" value="${esc(p.name)}">
+ <label for="pT">Type</label><select id="pT">${TT.map(s=>`<option ${s===p.type?"selected":""}>${esc(s)}</option>`).join("")}</select>
+ <label for="pD">Dimension</label>${dimSel("pD",p.dim)}
+ ${xyz("p",p)}
+ <label for="pO" style="display:block;margin-top:10px">Notes (optional)</label><textarea id="pO" style="min-height:70px;font-family:inherit;font-size:16px">${esc(p.notes)}</textarea>
+ <label for="pS">Label</label>${srcSel("pS",p.source)}
+ <div class="row"><button class="pri" data-act="savePlace">Save</button><button data-act="formOff">Cancel</button></div></div>`:addBtn("places","+ Add place"))
+ +["Overworld","Nether","The End"].filter(d=>by[d]).map(d=>`<h2>${d}</h2>`+by[d].map(r=>`<div class="card"><h3>${esc(r.name)} ${chip(r.source)}</h3><div class="mute">${esc(r.type||"")} · <span class="mono">${fc(r)}</span></div>${conv(r)}${r.notes?`<p>${esc(r.notes)}</p>`:""}<div class="row"><button data-act="formOn" data-k="places" data-id="${r.id}">Edit</button>${delBtn("places",r.id)}</div></div>`).join("")).join("")
+ +(w.places.length||p?"":`<div class="card mute">No places recorded yet.</div>`)},
+planner(){const w=active();if(!w)return noW();
+ const e=form&&form.k==='projects'?(w.projects.find(r=>r.id===form.id)||{}):null,TA=`style='min-height:90px;font-family:inherit;font-size:16px'`;
+ const od={high:0,medium:1,low:2},list=[...w.projects].sort((a,b)=>(pdone(a)-pdone(b))||((od[a.priority]??1)-(od[b.priority]??1))),oth=e?w.projects.filter(p=>p.id!==e.id):[];
+ return back('Projects')+dbn(w)+(e?`<div class='card'><h3>${e.id?'Edit project':'Add project'}</h3>${ferrBox}
+ <label for='jN'>Name</label><input id='jN' maxlength='80' value='${esc(e.name)}'>
+ <label for='jP'>Priority</label><select id='jP'>${['high','medium','low'].map(s=>`<option ${s===(e.priority||'medium')?'selected':''}>${s}</option>`).join('')}</select>
+ <label for='jR'>Requirements (one per line, Item: quantity)</label><textarea id='jR' ${TA} placeholder='Iron Ingot: 64'>${esc((e.needs||[]).map(n=>n.item+': '+n.qty).join('\n'))}</textarea>
+ <label for='jC'>Checklist (one step per line)</label><textarea id='jC' ${TA}>${esc((e.checklist||[]).map(c=>c.t).join('\n'))}</textarea>
+ ${oth.length?`<label>Depends on</label>${oth.map(p=>`<div><label><input type='checkbox' class='jd' value='${p.id}' ${(e.deps||[]).includes(p.id)?'checked':''} style='width:auto;margin:0 8px 0 0'>${esc(p.name)}</label></div>`).join('')}`:''}
+ <label for='jS' style='display:block;margin-top:10px'>Label</label>${srcSel('jS',e.source)}
+ <div class='row'><button class='pri' data-act='saveProj'>Save</button><button data-act='formOff'>Cancel</button></div></div>`:addBtn('projects','+ Add project'))
+ +list.map(p=>{const bl=blockedBy(w,p),ck=p.checklist||[],dn=ck.filter(c=>c.done).length;return`<div class='card'><h3>${esc(p.name)} ${chip(p.source)}</h3>
+ <div class='mute'>${esc(p.priority||'medium')} priority · ${pdone(p)?'Done':bl.length?'Blocked by '+esc(bl.map(d=>d.name).join(', ')):'Ready to work on'}${ck.length?' · '+dn+'/'+ck.length+' steps':''}</div>
+ ${(p.needs||[]).length?`<ul>${short(w,p).map(n=>`<li>${esc(n.item)}: ${n.have}/${n.qty} ${n.miss?`<span class='tag'>missing ${n.miss}</span>`:'✓'}</li>`).join('')}</ul>`:''}
+ ${ck.length?`<ul style='list-style:none;padding:0'>${ck.map((c,i)=>`<li><label><input type='checkbox' data-act='tick' data-id='${p.id}' data-i='${i}' ${c.done?'checked':''} style='width:auto;margin:0 8px 0 0'>${esc(c.t)}</label></li>`).join('')}</ul>`:''}
+ <div class='row'><button data-act='formOn' data-k='projects' data-id='${p.id}'>Edit</button>${delBtn('projects',p.id)}</div></div>`}).join('')
+ +(w.projects.length||e?'':`<div class='card mute'>No projects yet.</div>`)},
+advisor(){const w=active();if(!w)return noW();const a=advise(w);
+ return back('Advisor')+dbn(w)+`<div class='mute' style='margin-bottom:10px'>Rule-based and runs on your device. It ranks open projects by priority, how many materials you already hold, and blockers. No AI service is used.</div>`
+ +(a.length?a.map((x,i)=>`<div class='card'><h3>${i+1}. ${esc(x.p.name)} ${x.blocked?`<span class='chip estimated'>blocked</span>`:`<span class='chip manual'>${esc(x.p.priority||'medium')}</span>`}</h3><ul>${x.why.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`).join(''):`<div class='card mute'>No open projects. Add one in Projects and the advisor will rank it.</div>`)
+ +`<h2>Gaps in your data</h2><div class='card'><ul>${tasks(w).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`},
+modules(){
+ const m=[];
+ return`<p class="mute">Open a screen below.</p>
+ ${[["inventory","Inventory tracker","Quantities and storage locations"],["farms","Farm manager","Coordinates, measured output and history"],["atlas","World atlas","Dimensions, coordinates, structures and notes"],["planner","Project planner","Requirements, dependencies, priorities, checklists"],["advisor","Advisor","Rule-based project suggestions from your saved data (no AI service)"]].map(x=>`<div class="card"><h3>${x[1]}</h3><div class="mute">${x[2]}</div><div class="row"><button class="pri" data-act="go" data-v="${x[0]}">Open</button></div></div>`).join("")}
+ ${m.map(x=>`<div class="card"><h3>${x[0]} <span class="tag">Not built yet</span></h3><div class="mute">${x[1]}</div></div>`).join("")}`;
+},
+data(){
+ const w=active();
+ const scope=exportScope==="all"?S.worlds:(w?[w]:[]);
+ const out=scope.length?JSON.stringify({app:"overworld",schemaVersion:SCHEMA,exportedAt:now(),worlds:scope},(k,v)=>k==='photos'?undefined:v,2):"";
+ return`${msg?`<div class="msg ${msg.err?"err":""}">${msg.html}</div>`:""}
+ <div class="card"><h3>Export</h3>
+ <select id="xs" data-act="scope"><option value="active" ${exportScope==="active"?"selected":""}>Active world only</option><option value="all" ${exportScope==="all"?"selected":""}>All worlds</option></select>
+ <textarea id="xo" readonly>${esc(out)}</textarea>
+ <div class="row"><button class="pri" data-act="copy" ${out?"":"disabled"}>Copy JSON</button></div>
+ <div class="mute">Photos stay on this device and are not included in exports.</div></div>
+ <div class="card"><h3>Import</h3>
+ <textarea id="xi" placeholder="Paste an Overworld JSON export here">${esc(importPreview?importPreview.text:"")}</textarea>
+ <div class="row"><button data-act="validate">Validate</button>${importPreview&&importPreview.worlds.length?`<button class="pri" data-act="doImport">Import ${importPreview.worlds.length} world(s)</button>`:""}</div>
+ <div class="mute">Imports are added as new worlds and never overwrite existing ones. Colliding ids get a fresh id.</div></div>
+ <div class='card'><h3>Import from behavior pack</h3><textarea id='xp' placeholder='Paste lines like: Iron farm | Farm | Overworld | 120 64 -45 | note'></textarea><div class='row'><button class='pri' data-act='packImport'>Merge into active world</button></div><div class='mute'>Use the pack’s “View saved list” and type or paste its lines here. Format: Name | Type | Dimension | X Y Z | note, and inv | item | qty. Labeled automatic. Nothing is sent live.</div></div>`;
+},
+status(){
+ const t={automatic:0,manual:0,imported:0,estimated:0};
+ S.worlds.forEach(w=>{t[w.source]++;LISTS.forEach(k=>w[k].forEach(r=>{if(t[r.source]!==undefined)t[r.source]++}))});
+ return`<div class="card"><h3>Minecraft connection</h3><p><b>Not connected live.</b> The app never talks to Minecraft. A behavior pack now exists but is untested. Its data only arrives when you paste it in the Data tab, and those records are labeled automatic.</p></div>
+ <div class="card"><h3>Behavior pack <span class="tag">Written, untested</span></h3><ul class="mute"><li>In game: use a compass to open the Overworld menu</li><li>Transport: type or paste the saved list in the Data tab. Single-player worlds cannot send data live.</li><li>Last live update received: never</li><li>Tested against Bedrock: no</li></ul></div>
+ <div class="card"><h3>Records by label</h3><ul>${SRC.map(s=>`<li>${chip(s)} ${t[s]}</li>`).join("")}</ul><div class="mute">Automatic means captured by the pack and pasted in by you.</div></div>
+ <div class="card"><h3>Storage</h3><ul class="mute"><li>Adapter: ${Adapter.name} ${storageOk?"(working)":"(unavailable: changes will be lost on reload)"}</li><li>Schema version ${SCHEMA}</li><li>Cloud sync: not implemented; worlds already carry id, rev and updatedAt for it</li></ul></div>`;
+}};
+function render(){
+ const a=active();
+ document.getElementById("sub").textContent=a?a.name+(a.demo?" · demo":""):"No active world";
+ document.getElementById("storeflag").textContent=storageOk?"":"⚠ not saving";
+ document.getElementById("app").innerHTML=(msg&&route!=="data"?`<div class="msg ${msg.err?"err":""}">${msg.html}</div>`:"")+view[route]();
+ document.getElementById("nav").innerHTML=NAV.map(n=>`<button class="${route===n[0]||(n[0]==="modules"&&["inventory","farms","atlas","planner","advisor"].includes(route))?"on":""}" data-act="go" data-v="${n[0]}"><span>${n[1]}</span>${n[2]}</button>`).join("");
+}
+const val=id=>(document.getElementById(id)||{}).value||"";
+const acts={
+ delPhoto(d){const w=active(),f=w.farms.find(x=>x.id===d.id);f.photos.splice(+d.i,1);touch(w);commit()},
+ tick(d){const w=active(),p=w.projects.find(x=>x.id===d.id),c=p.checklist[+d.i];c.done=!c.done;touch(w);if(pdone(p))log(w,'Completed project: '+p.name);commit()},
+ saveProj(){const w=active(),name=val('jN').trim();if(!name)return ferr('Give the project a name.');
+  const needs=[];for(const l of val('jR').split('\n')){const s=l.trim();if(!s)continue;const m=s.match(/^(.+?)\s*[:x×]\s*(\d+)$/i);if(!m)return ferr('Can’t read requirement “'+s.slice(0,40)+'”. Use Item: quantity.');needs.push({item:m[1].trim(),qty:+m[2]})}
+  const cur=form.id?w.projects.find(p=>p.id===form.id):null,old=(cur&&cur.checklist)||[];
+  const checklist=val('jC').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,done:!!old.find(o=>o.t===t&&o.done)}));
+  const deps=[...document.querySelectorAll('.jd:checked')].map(x=>x.value);
+  upsert('projects',{name,priority:val('jP'),needs,checklist,deps,source:val('jS')},'project',{})},
+ packImport(){const w=active();if(!w){msg={err:1,html:'Select a world first.'};render();return}
+  let d;const tx=val('xp').trim();
+  if(tx[0]==='{'){try{d=JSON.parse(tx)}catch(e){msg={err:1,html:'That is not valid JSON.'};render();return}}
+  else{d={app:'overworld-pack',v:1,places:[],inv:[]};for(const l of tx.split('\n')){const s=l.trim();if(!s||s[0]==='#')continue;const a=s.split('|').map(x=>x.trim());
+   if(a[0].toLowerCase()==='inv'){d.inv.push({i:(a[1]||'').toLowerCase().replace(/ /g,'_'),q:+a[2]})}
+   else{const c=(a[3]||'').split(/[ ,]+/).map(Number);if(c.length<3||c.some(n=>!Number.isFinite(n)))continue;d.places.push({n:a[0],t:a[1]||'Other',d:a[2]||'Overworld',x:c[0],y:c[1],z:c[2],o:a[4]||''})}}}
+  if(!d||d.app!=='overworld-pack'||d.v!==1||!Array.isArray(d.places||[])||!Array.isArray(d.inv||[])){msg={err:1,html:'This is not Overworld pack output (expected app overworld-pack, v1).'};render();return}
+  let np=0,ni=0;
+  (d.places||[]).forEach(p=>{if(!p||typeof p.n!=='string'||!Number.isFinite(p.x)||!Number.isFinite(p.z))return;const dim=['Overworld','Nether','The End'].includes(p.d)?p.d:'Overworld';
+   if(w.places.some(q=>q.name===p.n&&q.dim===dim&&q.x===p.x&&q.z===p.z))return;
+   w.places.push({id:uid(),name:p.n.slice(0,60),type:String(p.t||'Other').slice(0,40),dim,x:p.x,y:Number.isFinite(p.y)?p.y:null,z:p.z,notes:String(p.o||'').slice(0,300),source:'automatic'});np++});
+  const L='Player inventory (pack snapshot)';
+  if((d.inv||[]).length){w.inventory=w.inventory.filter(r=>!(r.source==='automatic'&&r.location===L));
+   d.inv.forEach(r=>{if(r&&typeof r.i==='string'&&Number.isFinite(r.q)&&r.q>=0){w.inventory.push({id:uid(),item:r.i.replace(/^minecraft:/,'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).slice(0,60),qty:Math.floor(r.q),location:L,source:'automatic'});ni++}})}
+  touch(w);log(w,'Merged pack data: '+np+' places, '+ni+' inventory entries');msg={html:'Merged '+np+' new place(s) and '+ni+' inventory entries.'};commit()},
+ formOn(d){form={k:d.k,id:d.id||null};msg=null;render();window.scrollTo(0,0)},formOff(){form=null;render()},
+ saveInv(){const item=val("iN").trim(),q=num("iQ");if(!item||q==null||q<0)return ferr("Item name and a quantity of 0 or more are required.");
+  upsert("inventory",{item,qty:Math.floor(q),location:val("iL").trim(),source:val("iS")},"item")},
+ saveFarm(){const name=val("fN").trim(),x=num("fX"),z=num("fZ");if(!name||x==null||z==null)return ferr("Name, X and Z are required (Y is optional).");
+  upsert("farms",{name,type:val("fT").trim(),dim:val("fD"),x:Math.round(x),y:yv("fY"),z:Math.round(z),source:val("fS")},"farm",{output:[],history:[]})},
+ savePlace(){const name=val("pN").trim(),x=num("pX"),z=num("pZ");if(!name||x==null||z==null)return ferr("Name, X and Z are required (Y is optional).");
+  upsert("places",{name,type:val("pT"),dim:val("pD"),x:Math.round(x),y:yv("pY"),z:Math.round(z),notes:val("pO").trim(),source:val("pS")},"place")},
+ saveMeas(){const w=active(),f=w.farms.find(r=>r.id===form.id),item=val("mI").trim(),c=num("mC"),mi=num("mM");
+  if(!item||c==null||c<0||mi==null||mi<=0)return ferr("Item, a count of 0 or more, and minutes above 0 are required.");
+  const perHour=Math.round(c/mi*600)/10,s=val("mS");
+  f.history=f.history||[];f.history.unshift({id:uid(),at:now(),item,count:c,minutes:mi,perHour,source:s});f.history=f.history.slice(0,100);
+  f.output=(f.output||[]).filter(o=>o.item!==item);f.output.push({item,perHour,source:s});
+  touch(w);log(w,"Logged output for "+f.name+": "+item);form=null;msg={html:"Measurement saved."};commit()},
+ delRec(d){const w=active();w[d.k]=w[d.k].filter(r=>r.id!==d.id);touch(w);log(w,"Removed an entry from "+d.k);confirmDel=null;msg={html:"Deleted."};commit()},
+ go(d){route=d.v;msg=null;confirmDel=null;form=null;render();window.scrollTo(0,0)},
+ saveWorld(){
+  const name=val("wn").trim();if(!name){msg={err:1,html:"Give the world a name."};render();return}
+  if(editing){const w=S.worlds.find(x=>x.id===editing);w.name=name;w.seed=val("ws").trim();w.notes=val("wt").trim();touch(w);log(w,"World details edited");editing=null;msg={html:"Changes saved."}}
+  else{const w=newWorld(name,val("ws").trim(),val("wt").trim());log(w,"World created");S.worlds.push(w);S.activeWorldId=w.id;msg={html:"World created and set active."}}
+  commit();
+ },
+ edit(d){editing=d.id;msg=null;render();window.scrollTo(0,0)},cancelEdit(){editing=null;render()},
+ activate(d){S.activeWorldId=d.id;msg=null;commit()},
+ delAsk(d){confirmDel=d.id;render()},delNo(){confirmDel=null;render()},
+ delYes(d){S.worlds=S.worlds.filter(w=>w.id!==d.id);if(S.activeWorldId===d.id)S.activeWorldId=S.worlds[0]?S.worlds[0].id:null;confirmDel=null;msg={html:"World deleted."};commit()},
+ addDemo(){const w=demoWorld();S.worlds.push(w);S.activeWorldId=w.id;route="home";msg=null;commit()},
+ scope(){exportScope=val("xs");render()},
+ async copy(){const x=document.getElementById("xo");x.select();let ok=false;try{await navigator.clipboard.writeText(x.value);ok=true}catch(e){try{ok=document.execCommand("copy")}catch(_){}}
+  msg=ok?{html:"Copied to clipboard."}:{err:1,html:"Copy was blocked. The text is selected, so use your phone’s Copy action."};render();if(!ok)document.getElementById("xo").select()},
+ validate(){const text=val("xi");const r=validateBundle(text);importPreview={text,worlds:r.worlds};
+  msg=r.errs.length?{err:1,html:"Import blocked:<ul>"+r.errs.map(e=>"<li>"+esc(e)+"</li>").join("")+"</ul>"}:{html:"Valid: "+r.worlds.map(w=>esc(w.name)).join(", ")+". Tap Import to add."};render()},
+ doImport(){
+  if(!importPreview)return;const ids=new Set(S.worlds.map(w=>w.id));
+  importPreview.worlds.forEach(w=>{const c=ids.has(w.id);if(c)w.id=uid();w.source="imported";touch(w);log(w,"Imported"+(c?" (id collided, new id assigned)":""));S.worlds.push(w);ids.add(w.id)});
+  if(!active())S.activeWorldId=S.worlds[0].id;
+  msg={html:"Imported "+importPreview.worlds.length+" world(s)."};importPreview=null;commit();
+ }
+};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(b&&b.tagName!=="SELECT"&&acts[b.dataset.act])acts[b.dataset.act](b.dataset)});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.act==="scope")acts.scope();if(t.dataset&&t.dataset.photo){addPhoto(t.dataset.photo,t.files&&t.files[0]);t.value=''}});
+(async function boot(){
+ const raw=await Adapter.load();
+ if(raw&&raw.schemaVersion===SCHEMA&&Array.isArray(raw.worlds)){
+  const errs=[];const ws=raw.worlds.map((w,i)=>validateWorld(w,i,errs)).filter(Boolean);
+  S={schemaVersion:SCHEMA,activeWorldId:raw.activeWorldId,worlds:ws};
+  if(!active()&&ws.length)S.activeWorldId=ws[0].id;
+ }
+ try{localStorage.setItem("overworld:probe","1");localStorage.removeItem("overworld:probe")}catch(e){storageOk=false}
+ render();
+})();
+</script></body></html>
